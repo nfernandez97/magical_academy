@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  web:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: backend
+    ports:
+      - "8000:80"
+    environment:
+      - DATABASE_URL=mysql+mysqlconnector://root:soleNeSAS2024@db:3306/magical_academy
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - web
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: soleNeSAS2024
+      MYSQL_DATABASE: magical_academy
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./magical_academy.sql:/docker-entrypoint-initdb.d/magical_academy.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 20s
+      timeout: 5s
+      retries: 5  
+
+volumes:
+  mysql_data:
+
+
